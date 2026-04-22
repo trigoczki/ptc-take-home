@@ -3,6 +3,7 @@ package me.trigoczki.contenttree.controller;
 import jakarta.validation.Valid;
 import me.trigoczki.contenttree.domain.dto.CreateNodeRequest;
 import me.trigoczki.contenttree.domain.dto.TreeNodeResponse;
+import me.trigoczki.contenttree.domain.dto.UpdateNodeRequest;
 import me.trigoczki.contenttree.service.TreeNodeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,5 +28,10 @@ public class TreeNodeController {
     @GetMapping("/nodes")
     public List<TreeNodeResponse> listNodes(@RequestParam(name = "parentId", required = false) Long parentId) {
         return treeNodeService.listNodes(parentId);
+    }
+
+    @PutMapping("/nodes")
+    public ResponseEntity<TreeNodeResponse> update(@Valid @RequestBody UpdateNodeRequest request) {
+        return ResponseEntity.ok(treeNodeService.updateNode(request));
     }
 }

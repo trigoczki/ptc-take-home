@@ -7,4 +7,6 @@ import java.util.List;
 
 public interface TreeNodeRepository extends JpaRepository<TreeNode, Long> {
     List<TreeNode> findAllByParentId(Long parentId);
+
+    boolean existsByParentId(Long parentId);
 }
