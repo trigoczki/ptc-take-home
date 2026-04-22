@@ -5,10 +5,9 @@ import me.trigoczki.contenttree.domain.dto.CreateNodeRequest;
 import me.trigoczki.contenttree.domain.dto.TreeNodeResponse;
 import me.trigoczki.contenttree.service.TreeNodeService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/tree")
@@ -23,5 +22,10 @@ public class TreeNodeController {
     @PostMapping("/nodes")
     public ResponseEntity<TreeNodeResponse> create(@Valid @RequestBody CreateNodeRequest request) {
         return ResponseEntity.ok(treeNodeService.insertNode(request));
+    }
+
+    @GetMapping("/nodes")
+    public List<TreeNodeResponse> listNodes(@RequestParam(name = "parentId", required = false) Long parentId) {
+        return treeNodeService.listNodes(parentId);
     }
 }

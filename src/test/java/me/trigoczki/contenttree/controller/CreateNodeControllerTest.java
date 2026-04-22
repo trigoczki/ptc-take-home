@@ -14,6 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static me.trigoczki.contenttree.Constants.NODES_URI;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -21,9 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(TreeNodeController.class)
-class TreeNodeControllerTest {
-
-    public static final String URI_TEMPLATE = "/api/tree/nodes";
+class CreateNodeControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -40,12 +39,12 @@ class TreeNodeControllerTest {
         request.setName("New Node");
         request.setContent("Some content");
 
-        TreeNodeResponse response = new TreeNodeResponse(1L, "New Node", "Some content", List.of());
+        TreeNodeResponse response = new TreeNodeResponse(1L, "New Node", "Some content", false, List.of());
 
         when(treeNodeService.insertNode(any(CreateNodeRequest.class)))
                 .thenReturn(response);
 
-        mockMvc.perform(post(URI_TEMPLATE)
+        mockMvc.perform(post(NODES_URI)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
@@ -58,7 +57,7 @@ class TreeNodeControllerTest {
     void createWithInvalidRequestReturnsBadRequest() throws Exception {
         CreateNodeRequest request = new CreateNodeRequest();
 
-        mockMvc.perform(post(URI_TEMPLATE)
+        mockMvc.perform(post(NODES_URI)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -71,7 +70,7 @@ class TreeNodeControllerTest {
         request.setContent("Content");
         request.setParentId(-1L);
 
-        mockMvc.perform(post(URI_TEMPLATE)
+        mockMvc.perform(post(NODES_URI)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
@@ -87,7 +86,7 @@ class TreeNodeControllerTest {
         when(treeNodeService.insertNode(any(CreateNodeRequest.class)))
                 .thenThrow(new NotFoundException("Parent node not found: 1"));
 
-        mockMvc.perform(post(URI_TEMPLATE)
+        mockMvc.perform(post(NODES_URI)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())

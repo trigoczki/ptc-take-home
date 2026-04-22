@@ -18,6 +18,9 @@ public class TreeNode {
     @Column(nullable = false)
     private String content;
 
+    @Column(name = "has_children")
+    private boolean hasChildren;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
     private TreeNode parent;
@@ -46,6 +49,14 @@ public class TreeNode {
         this.content = content;
     }
 
+    public boolean isHasChildren() {
+        return hasChildren;
+    }
+
+    public void setHasChildren(boolean hasChildren) {
+        this.hasChildren = hasChildren;
+    }
+
     public TreeNode getParent() {
         return parent;
     }
@@ -58,12 +69,12 @@ public class TreeNode {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         TreeNode treeNode = (TreeNode) o;
-        return Objects.equals(id, treeNode.id) && Objects.equals(name, treeNode.name) && Objects.equals(content, treeNode.content) && Objects.equals(parent, treeNode.parent);
+        return hasChildren == treeNode.hasChildren && Objects.equals(id, treeNode.id) && Objects.equals(name, treeNode.name) && Objects.equals(content, treeNode.content) && Objects.equals(parent, treeNode.parent);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, content, parent);
+        return Objects.hash(id, name, content, hasChildren, parent);
     }
 
     @Override
@@ -72,6 +83,7 @@ public class TreeNode {
                 "id=" + id +
                 ", name='" + name + '\'' +
                 ", content='" + content + '\'' +
+                ", hasChildren=" + hasChildren +
                 ", parent=" + parent +
                 '}';
     }
