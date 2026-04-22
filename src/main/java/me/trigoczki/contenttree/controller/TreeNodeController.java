@@ -34,4 +34,10 @@ public class TreeNodeController {
     public ResponseEntity<TreeNodeResponse> update(@Valid @RequestBody UpdateNodeRequest request) {
         return ResponseEntity.ok(treeNodeService.updateNode(request));
     }
+
+    @DeleteMapping("/nodes/{id}")
+    public ResponseEntity<Void> deleteNode(@PathVariable Long id) {
+        treeNodeService.deleteNode(id);
+        return ResponseEntity.noContent().build();
+    }
 }

@@ -89,4 +89,20 @@ public class TreeNodeService {
         return nodes.stream()
                 .map(node -> new TreeNodeResponse(node.getId(), node.getName(), node.getContent(), node.isHasChildren(), List.of())).toList();
     }
+
+    @Transactional
+    public void deleteNode(Long id) {
+        TreeNode existing = treeNodeRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Node not found: " + id));
+
+        deleteRecursively(existing.getId());
+    }
+
+    private void deleteRecursively(Long id) {
+        List<TreeNode> children = treeNodeRepository.findAllByParentId(id);
+        for (TreeNode child : children) {
+            deleteRecursively(child.getId());
+        }
+        treeNodeRepository.deleteById(id);
+    }
 }
