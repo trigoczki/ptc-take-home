@@ -40,4 +40,9 @@ public class TreeNodeController {
         treeNodeService.deleteNode(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/nodes/{id}")
+    public TreeNodeResponse getNode(@PathVariable Long id) {
+        return treeNodeService.getNode(id);
+    }
 }

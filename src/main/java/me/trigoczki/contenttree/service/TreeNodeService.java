@@ -98,6 +98,17 @@ public class TreeNodeService {
         deleteRecursively(existing.getId());
     }
 
+    @Transactional(readOnly = true)
+    public TreeNodeResponse getNode(Long id) {
+        if (id < 1L) {
+            throw new BadRequestException("Parent ID must be a positive number");
+        }
+        TreeNode node = treeNodeRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Parent node not found: " + id));
+
+        return new TreeNodeResponse(node.getId(), node.getName(), node.getContent(), node.isHasChildren(), List.of());
+    }
+
     private void deleteRecursively(Long id) {
         List<TreeNode> children = treeNodeRepository.findAllByParentId(id);
         for (TreeNode child : children) {
