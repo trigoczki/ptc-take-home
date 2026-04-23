@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/tree")
+@RequestMapping("/api/tree/nodes")
 public class TreeNodeController {
 
     private final TreeNodeService treeNodeService;
@@ -20,28 +20,28 @@ public class TreeNodeController {
         this.treeNodeService = treeNodeService;
     }
 
-    @PostMapping("/nodes")
+    @PostMapping
     public ResponseEntity<TreeNodeResponse> create(@Valid @RequestBody CreateNodeRequest request) {
         return ResponseEntity.ok(treeNodeService.insertNode(request));
     }
 
-    @GetMapping("/nodes")
+    @GetMapping
     public List<TreeNodeResponse> listNodes(@RequestParam(name = "parentId", required = false) Long parentId) {
         return treeNodeService.listNodes(parentId);
     }
 
-    @PutMapping("/nodes")
+    @PutMapping
     public ResponseEntity<TreeNodeResponse> update(@Valid @RequestBody UpdateNodeRequest request) {
         return ResponseEntity.ok(treeNodeService.updateNode(request));
     }
 
-    @DeleteMapping("/nodes/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteNode(@PathVariable Long id) {
         treeNodeService.deleteNode(id);
         return ResponseEntity.noContent().build();
     }
 
-    @GetMapping("/nodes/{id}")
+    @GetMapping("/{id}")
     public TreeNodeResponse getNode(@PathVariable Long id) {
         return treeNodeService.getNode(id);
     }

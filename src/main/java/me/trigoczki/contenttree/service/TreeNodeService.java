@@ -7,6 +7,7 @@ import me.trigoczki.contenttree.domain.entity.TreeNode;
 import me.trigoczki.contenttree.exception.BadRequestException;
 import me.trigoczki.contenttree.exception.NotFoundException;
 import me.trigoczki.contenttree.repository.TreeNodeRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,9 +17,11 @@ import java.util.List;
 @Service
 public class TreeNodeService {
 
+    private final ModelMapper modelMapper;
     private final TreeNodeRepository treeNodeRepository;
 
-    public TreeNodeService(TreeNodeRepository treeNodeRepository) {
+    public TreeNodeService(ModelMapper modelMapper, TreeNodeRepository treeNodeRepository) {
+        this.modelMapper = modelMapper;
         this.treeNodeRepository = treeNodeRepository;
     }
 
@@ -40,7 +43,9 @@ public class TreeNodeService {
         }
 
         TreeNode saved = treeNodeRepository.save(node);
-        return new TreeNodeResponse(saved.getId(), saved.getName(), saved.getContent(), false, List.of());
+        TreeNodeResponse response = modelMapper.map(saved, TreeNodeResponse.class);
+
+        return response;
     }
 
     @Transactional(isolation = Isolation.READ_UNCOMMITTED)
@@ -63,10 +68,12 @@ public class TreeNodeService {
         }
 
         List<TreeNodeResponse> childNodes = treeNodeRepository.findAllByParentId(node.getId()).stream()
-                .map(child -> new TreeNodeResponse(child.getId(), child.getName(), child.getContent(), child.isHasChildren(), List.of()))
+                .map(child -> modelMapper.map(child, TreeNodeResponse.class))
                 .toList();
+        TreeNodeResponse response = modelMapper.map(node, TreeNodeResponse.class);
+        response.setChildren(childNodes);
 
-        return new TreeNodeResponse(node.getId(), node.getName(), node.getContent(), node.isHasChildren(), childNodes);
+        return response;
     }
 
 
@@ -87,7 +94,8 @@ public class TreeNodeService {
         }
 
         return nodes.stream()
-                .map(node -> new TreeNodeResponse(node.getId(), node.getName(), node.getContent(), node.isHasChildren(), List.of())).toList();
+                .map(node -> modelMapper.map(node, TreeNodeResponse.class))
+                .toList();
     }
 
     @Transactional
@@ -106,7 +114,7 @@ public class TreeNodeService {
         TreeNode node = treeNodeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Parent node not found: " + id));
 
-        return new TreeNodeResponse(node.getId(), node.getName(), node.getContent(), node.isHasChildren(), List.of());
+        return modelMapper.map(node, TreeNodeResponse.class);
     }
 
     private void deleteRecursively(Long id) {

@@ -9,4 +9,6 @@ public interface TreeNodeRepository extends JpaRepository<TreeNode, Long> {
     List<TreeNode> findAllByParentId(Long parentId);
 
     boolean existsByParentId(Long parentId);
+
+    List<TreeNode> findAllByNameContainingIgnoreCaseOrContentContainingIgnoreCaseOrderByIdDesc(String name, String content);
 }

@@ -1,5 +1,6 @@
-package me.trigoczki.contenttree.controller;
+package me.trigoczki.contenttree.controller.node;
 
+import me.trigoczki.contenttree.controller.TreeNodeController;
 import me.trigoczki.contenttree.domain.dto.TreeNodeResponse;
 import me.trigoczki.contenttree.exception.BadRequestException;
 import me.trigoczki.contenttree.exception.NotFoundException;
@@ -19,7 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(TreeNodeController.class)
-class GetNodeByIdControllerTest {
+class ListNodesControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -28,35 +29,51 @@ class GetNodeByIdControllerTest {
     private TreeNodeService treeNodeService;
 
     @Test
-    void getNodeByIdWithExistingIdReturnsOk() throws Exception {
+    void listRootNodesWithoutParentIdReturnsOk() throws Exception {
         TreeNodeResponse response = new TreeNodeResponse(1L, "Root Node", "Root content", true, List.of());
 
-        when(treeNodeService.getNode(1L)).thenReturn(response);
+        when(treeNodeService.listNodes(null))
+                .thenReturn(List.of(response));
 
-        mockMvc.perform(get(NODES_URI + "/{id}", 1L))
+        mockMvc.perform(get(NODES_URI))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1L))
-                .andExpect(jsonPath("$.name").value("Root Node"))
-                .andExpect(jsonPath("$.content").value("Root content"))
-                .andExpect(jsonPath("$.hasChildren").value(true));
+                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[0].name").value("Root Node"))
+                .andExpect(jsonPath("$[0].content").value("Root content"))
+                .andExpect(jsonPath("$[0].hasChildren").value(true));
     }
 
     @Test
-    void getNodeByIdWithInvalidIdReturnsBadRequest() throws Exception {
-        when(treeNodeService.getNode(-1L))
+    void listNodesWithParentIdReturnsOk() throws Exception {
+        TreeNodeResponse response = new TreeNodeResponse(2L, "Child Node", "Child content", false, List.of());
+
+        when(treeNodeService.listNodes(1L))
+                .thenReturn(List.of(response));
+
+        mockMvc.perform(get(NODES_URI).param("parentId", "1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].id").value(2L))
+                .andExpect(jsonPath("$[0].name").value("Child Node"))
+                .andExpect(jsonPath("$[0].content").value("Child content"))
+                .andExpect(jsonPath("$[0].hasChildren").value(false));
+    }
+
+    @Test
+    void listNodesWithNegativeParentIdReturnsBadRequest() throws Exception {
+        when(treeNodeService.listNodes(-1L))
                 .thenThrow(new BadRequestException("Parent ID must be a positive number"));
 
-        mockMvc.perform(get(NODES_URI + "/{id}", -1L))
+        mockMvc.perform(get(NODES_URI).param("parentId", "-1"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Parent ID must be a positive number"));
     }
 
     @Test
-    void getNodeByIdWithNonExistentIdReturnsNotFound() throws Exception {
-        when(treeNodeService.getNode(11L))
+    void listNodesWithNonExistentParentReturnsNotFound() throws Exception {
+        when(treeNodeService.listNodes(11L))
                 .thenThrow(new NotFoundException("Parent node not found: 11"));
 
-        mockMvc.perform(get(NODES_URI + "/{id}", 11L))
+        mockMvc.perform(get(NODES_URI).param("parentId", "11"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Parent node not found: 11"));
     }

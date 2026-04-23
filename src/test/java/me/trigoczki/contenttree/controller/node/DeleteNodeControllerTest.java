@@ -1,5 +1,6 @@
-package me.trigoczki.contenttree.controller;
+package me.trigoczki.contenttree.controller.node;
 
+import me.trigoczki.contenttree.controller.TreeNodeController;
 import me.trigoczki.contenttree.exception.NotFoundException;
 import me.trigoczki.contenttree.service.TreeNodeService;
 import org.junit.jupiter.api.Test;
