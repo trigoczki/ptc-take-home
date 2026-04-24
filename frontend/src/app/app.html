@@ -4,7 +4,10 @@
   </div>
 
   <div class="tree-container">
-    <app-tree-display></app-tree-display>
+    <div class="tree-search-and-display">
+      <search-by-id></search-by-id>
+      <app-tree-display></app-tree-display>
+    </div>
     @if (showAddNode()) {
       <app-add-node [parentId]="selectedNodeId()" (onSaved)="showAddNode.set(false)"></app-add-node>
     }

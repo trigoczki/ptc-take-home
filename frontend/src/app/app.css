@@ -28,3 +28,9 @@ button:disabled {
   gap: 10px;
 }
 
+.tree-search-and-display {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+

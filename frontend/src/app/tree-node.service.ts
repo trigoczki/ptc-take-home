@@ -1,4 +1,4 @@
-import {inject, Injectable, signal} from '@angular/core';
+import {effect, inject, Injectable, signal} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
 import {AddNodeRequest, TreeNode, TreeNodeResponse, UpdateNodeRequest} from './tree-node.model';
 
@@ -13,7 +13,29 @@ export class TreeNodeService {
   selectedNodeId = signal<number | null>(null);
   selectedNode = signal<TreeNode | null>(null);
   openNodes = signal<Set<number>>(new Set<number>());
+  searchId = signal<number | null>(null);
   showDeleteDialog = signal(false);
+
+  constructor() {
+    effect(() => {
+      const id = this.searchId();
+      if (id != null) {
+        this.fetchNodeById(id);
+      } else {
+        this.loadNodes();
+      }
+    });
+  }
+
+  fetchNodeById(id: number): void {
+    this.nodes.set([])
+    this.openNodes.set(new Set<number>());
+    this.http.get<TreeNodeResponse>(`${this.basePath}/${id}`)
+      .subscribe({
+        next: (response) => this.nodes.set([this.toTreeNode(response)]),
+        error: (err) => console.error('Failed to fetch node by id', err)
+      });
+  }
 
   addNode(node: AddNodeRequest): void {
     this.http.post<TreeNodeResponse>(`${this.basePath}`, node)

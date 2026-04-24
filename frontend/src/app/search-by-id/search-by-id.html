@@ -1,0 +1,12 @@
+<div class="search-container">
+  <label for="search-input">Search by ID:</label>
+  <input
+    type="number"
+    [formControl]="searchControl"
+    placeholder="Search by ID..."
+    class="search-input"
+  />
+  @if (searchControl.value) {
+    <button (click)="searchControl.setValue('')" class="clear-btn">✕</button>
+  }
+</div>
