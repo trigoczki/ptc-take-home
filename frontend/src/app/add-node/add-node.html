@@ -1,0 +1,6 @@
+<section [formGroup]="nodeForm">
+  <p>Add node</p>
+  <input type="text" placeholder="Name" formControlName="name">
+  <input type="text" placeholder="Content" formControlName="content">
+  <button [disabled]="nodeForm.invalid" (click)="onAdd()">Add</button>
+</section>
