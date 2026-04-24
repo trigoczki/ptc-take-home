@@ -13,11 +13,16 @@ import {EditNode} from './edit-node/edit-node';
 export class App {
   private treeNodeService = inject(TreeNodeService);
   showAddNode = signal(false);
+  showDeleteDialog = signal(false);
   showEditNode = signal(false);
   readonly selectedNodeId = this.treeNodeService.selectedNodeId;
   readonly selectedNode = this.treeNodeService.selectedNode;
 
   toggleAddNode() {
     this.showAddNode.update(value => !value);
+  }
+
+  openDeleteDialog() {
+    this.showDeleteDialog.set(true);
   }
 }

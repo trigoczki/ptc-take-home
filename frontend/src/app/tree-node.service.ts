@@ -13,6 +13,7 @@ export class TreeNodeService {
   selectedNodeId = signal<number | null>(null);
   selectedNode = signal<TreeNode | null>(null);
   openNodes = signal<Set<number>>(new Set<number>());
+  showDeleteDialog = signal(false);
 
   addNode(node: AddNodeRequest): void {
     this.http.post<TreeNodeResponse>(`${this.basePath}`, node)
@@ -22,6 +23,34 @@ export class TreeNodeService {
   updateNode(node: UpdateNodeRequest): void {
     this.http.put<TreeNodeResponse>(`${this.basePath}`, node)
       .subscribe({next: (response) => this.updateNodeInTree(response)});
+  }
+
+  deleteNode(id: number): void {
+    this.http.delete(`${this.basePath}/${id}`)
+      .subscribe({next: () => this.removeNodeFromTree(id)});
+  }
+
+  private removeNodeFromTree(id: number): void {
+    let deletableNode = this.getNodeById(id);
+    let parentId = deletableNode?.parentId;
+    this.nodes.update(nodes => this.filterNodeFromTree(nodes, id));
+    if (this.selectedNode()?.id === id) {
+      this.selectedNode.set(null);
+      this.selectedNodeId.set(null);
+    }
+    if (parentId != null) {
+      let parent = this.getNodeById(parentId);
+      if (parent?.children?.length === 0) {
+        this.nodes.update(nodes => this.setHasChildrenInTree(nodes, parentId, false));
+        this.closeNode(parentId)
+      }
+    }
+  }
+
+  private filterNodeFromTree(nodes: TreeNode[], id: number): TreeNode[] {
+    return nodes
+      .filter(node => node.id !== id)
+      .map(node => ({...node, children: this.filterNodeFromTree(node.children, id)}));
   }
 
   loadNodes(parentId?: number | null): void {

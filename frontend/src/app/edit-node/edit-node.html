@@ -9,6 +9,10 @@
   } @else if (selectedNode() != null) {
     <p>Name: {{ selectedNode()!.name }}</p>
     <p>Content: {{ selectedNode()!.content }}</p>
+    <button (click)="toggleDeleteMode()">Delete</button>
     <button (click)="toggleEditMode()">Edit</button>
   }
 </section>
+@if (showDeleteDialog()) {
+  <delete-node (onSaved)="showDeleteDialog.set(false)" (onCancel)="showDeleteDialog.set(false)"></delete-node>
+}

@@ -99,12 +99,17 @@ public class TreeNodeService {
                 .toList();
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.READ_UNCOMMITTED)
     public void deleteNode(Long id) {
         TreeNode existing = treeNodeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Node not found: " + id));
 
         deleteRecursively(existing.getId());
+
+        TreeNode parent = existing.getParent();
+        if (!treeNodeRepository.existsByParentId(parent.getId())) {
+            parent.setHasChildren(false);
+        }
     }
 
     @Transactional(readOnly = true)
