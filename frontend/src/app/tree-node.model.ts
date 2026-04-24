@@ -24,3 +24,7 @@ export interface AddNodeRequest {
   content: string;
   parentId: number | null;
 }
+
+export interface UpdateNodeRequest extends AddNodeRequest {
+  id: number;
+}

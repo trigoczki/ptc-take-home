@@ -1,0 +1,14 @@
+<section>
+  @if (isEditMode) {
+    <div [formGroup]="nodeForm">
+      <p>Edit node</p>
+      <input type="text" placeholder="Name" formControlName="name">
+      <input type="text" placeholder="Content" formControlName="content">
+      <button [disabled]="nodeForm.invalid" (click)="onEdit()">Edit</button>
+    </div>
+  } @else if (selectedNode() != null) {
+    <p>Name: {{ selectedNode()!.name }}</p>
+    <p>Content: {{ selectedNode()!.content }}</p>
+    <button (click)="toggleEditMode()">Edit</button>
+  }
+</section>

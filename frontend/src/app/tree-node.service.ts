@@ -1,6 +1,6 @@
 import {inject, Injectable, signal} from '@angular/core';
 import {HttpClient} from '@angular/common/http';
-import {AddNodeRequest, TreeNode, TreeNodeResponse} from './tree-node.model';
+import {AddNodeRequest, TreeNode, TreeNodeResponse, UpdateNodeRequest} from './tree-node.model';
 
 @Injectable({
   providedIn: 'root'
@@ -10,29 +10,19 @@ export class TreeNodeService {
   private http = inject(HttpClient);
 
   readonly nodes = signal<TreeNode[]>([]);
-  readonly selectedNodeId = signal<number | null>(null);
+  selectedNodeId = signal<number | null>(null);
+  selectedNode = signal<TreeNode | null>(null);
   openNodes = signal<Set<number>>(new Set<number>());
 
-  selectNode(id: number): void {
-    this.selectedNodeId.set(id);
+  addNode(node: AddNodeRequest): void {
+    this.http.post<TreeNodeResponse>(`${this.basePath}`, node)
+      .subscribe({next: (response) => this.insertNode(response)});
   }
 
-  openNode(id: number): void {
-    this.openNodes.update(nodes => {
-      nodes.add(id);
-      return nodes;
-    });
+  updateNode(node: UpdateNodeRequest): void {
+    this.http.put<TreeNodeResponse>(`${this.basePath}`, node)
+      .subscribe({next: (response) => this.updateNodeInTree(response)});
   }
-
-  closeNode(id: number): void {
-    this.openNodes.update(nodes => {
-      const newSet = new Set(nodes);
-      newSet.delete(id);
-      return newSet;
-    });
-    this.nodes.update(nodes => this.setIsOpenInTree(nodes, id, false));
-  }
-
 
   loadNodes(parentId?: number | null): void {
     const url = parentId != null
@@ -50,6 +40,47 @@ export class TreeNodeService {
       },
       error: (err) => console.error('Failed to load nodes', err)
     });
+  }
+
+  selectNode(id: number): void {
+    this.selectedNodeId.set(id);
+    this.selectedNode.set(this.getNodeById(id));
+  }
+
+  getNodeById(id: number): TreeNode | null {
+    return this.findNodeById(this.nodes(), id);
+  }
+
+  private findNodeById(nodes: TreeNode[], id: number): TreeNode | null {
+    for (const node of nodes) {
+      if (node.id === id) {
+        return node;
+      }
+      if (node.children && node.children.length > 0) {
+        const found = this.findNodeById(node.children, id);
+        if (found) {
+          return found;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  openNode(id: number): void {
+    this.openNodes.update(nodes => {
+      nodes.add(id);
+      return nodes;
+    });
+  }
+
+  closeNode(id: number): void {
+    this.openNodes.update(nodes => {
+      const newSet = new Set(nodes);
+      newSet.delete(id);
+      return newSet;
+    });
+    this.nodes.update(nodes => this.setIsOpenInTree(nodes, id, false));
   }
 
   deleteChildren(parentId: number): void {
@@ -102,11 +133,6 @@ export class TreeNodeService {
     });
   }
 
-  addNode(node: AddNodeRequest): void {
-    this.http.post<TreeNodeResponse>(`${this.basePath}`, node)
-      .subscribe({next: (response) => this.insertNode(response)});
-  }
-
   insertNode(newNode: TreeNodeResponse): void {
     const treeNode = this.toTreeNode(newNode);
     if (newNode.parentId == null) {
@@ -142,5 +168,25 @@ export class TreeNodeService {
       isOpen: this.openNodes().has(r.id),
       children: (r.children ?? []).map(c => this.toTreeNode(c))
     };
+  }
+
+  private updateNodeInTree(response: TreeNodeResponse) {
+    const treeNode = this.toTreeNode(response);
+    this.nodes.update(nodes => this.replaceNodeInTree(nodes, treeNode));
+    if (this.selectedNode()?.id === treeNode.id) {
+      this.selectedNode.set(treeNode);
+    }
+  }
+
+  private replaceNodeInTree(nodes: TreeNode[], updatedNode: TreeNode): TreeNode[] {
+    return nodes.map(node => {
+      if (node.id === updatedNode.id) {
+        return {...updatedNode, children: node.children};
+      }
+      if (node.children && node.children.length > 0) {
+        return {...node, children: this.replaceNodeInTree(node.children, updatedNode)};
+      }
+      return node;
+    });
   }
 }

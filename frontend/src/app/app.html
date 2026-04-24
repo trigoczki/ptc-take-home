@@ -1,14 +1,16 @@
 <main>
   <div class="toolbar">
     <button (click)="toggleAddNode()">New</button>
-    <button>Edit</button>
-    <button>Delete</button>
+    <button [disabled]="selectedNode()==null">Delete</button>
   </div>
 
   <div class="tree-container">
     <app-tree-display></app-tree-display>
     @if (showAddNode()) {
       <app-add-node [parentId]="selectedNodeId()" (onSaved)="showAddNode.set(false)"></app-add-node>
+    }
+    @if (selectedNode() != null) {
+      <edit-node (onSaved)="showEditNode.set(false)"></edit-node>
     }
   </div>
 </main>
