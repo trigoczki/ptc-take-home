@@ -44,6 +44,7 @@ public class TreeNodeService {
 
         TreeNode saved = treeNodeRepository.save(node);
         TreeNodeResponse response = modelMapper.map(saved, TreeNodeResponse.class);
+        response.setParentId(request.getParentId());
 
         return response;
     }

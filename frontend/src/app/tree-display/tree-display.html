@@ -1,0 +1,26 @@
+<ng-template #treeNodes let-nodeList="nodeList">
+  @for (node of nodeList; track node.id) {
+    <li class="tree-node">
+      <div class="node-header">
+        @if (node.hasChildren) {
+          <span class="node-toggle"
+                (click)="toggleNode(node.id); $event.stopPropagation()">{{ node.isOpen ? '-' : '+' }}</span>
+        }
+        <span class="node-name" (click)="selectNode(node.id)">{{ node.name }}</span>
+      </div>
+      @if (node.isOpen && node.children && node.children.length > 0) {
+        <ul class="tree-children">
+          <ng-container *ngTemplateOutlet="treeNodes; context: { nodeList: node.children }"></ng-container>
+        </ul>
+      }
+    </li>
+  }
+</ng-template>
+
+<ul class="tree-root">
+  @if (nodes().length > 0) {
+    <ng-container *ngTemplateOutlet="treeNodes; context: { nodeList: nodes() }"></ng-container>
+  } @else {
+    <li class="tree-empty">No nodes yet.</li>
+  }
+</ul>

@@ -1,0 +1,16 @@
+.tree-root,
+.tree-children {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tree-children {
+  padding-left: 20px;
+}
+
+.node-header {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}

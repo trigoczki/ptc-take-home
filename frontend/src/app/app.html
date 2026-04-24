@@ -5,8 +5,11 @@
     <button>Delete</button>
   </div>
 
-  @if (showAddNode()) {
-    <app-add-node (onSaved)="showAddNode.set(false)"></app-add-node>
-  }
+  <div class="tree-container">
+    <app-tree-display></app-tree-display>
+    @if (showAddNode()) {
+      <app-add-node [parentId]="selectedNodeId()" (onSaved)="showAddNode.set(false)"></app-add-node>
+    }
+  </div>
 </main>
 

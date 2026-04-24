@@ -1,6 +1,6 @@
-import {Component, inject, output} from '@angular/core';
+import {Component, inject, input, OnInit, output} from '@angular/core';
 import {FormBuilder, ReactiveFormsModule, Validators} from '@angular/forms';
-import {TreeNodeApiService} from '../tree-node-api.service';
+import {TreeNodeService} from '../tree-node.service';
 
 @Component({
   selector: 'app-add-node',
@@ -8,11 +8,12 @@ import {TreeNodeApiService} from '../tree-node-api.service';
   templateUrl: './add-node.html',
   styleUrl: './add-node.css',
 })
-export class AddNode {
+export class AddNode implements OnInit {
   private fb = inject(FormBuilder);
-  private api = inject(TreeNodeApiService);
+  private api = inject(TreeNodeService);
 
   onSaved = output<void>();
+  parentId = input<number | null>(null);
 
   protected nodeForm = this.fb.nonNullable.group({
     name: ['', [Validators.required]],
@@ -20,15 +21,15 @@ export class AddNode {
     parentId: [null as number | null]
   });
 
+  ngOnInit(): void {
+    this.nodeForm.patchValue({parentId: this.parentId()});
+  }
+
   onAdd(): void {
     if (this.nodeForm.valid) {
-      this.api.addNode(this.nodeForm.getRawValue()).subscribe({
-        next: (response) => {
-          console.log('Data saved successfully!', response);
-          this.onSaved.emit();
-        },
-        error: (error) => console.error('There was an error!', error)
-      })
+      this.nodeForm.patchValue({parentId: this.parentId()});
+      this.api.addNode(this.nodeForm.getRawValue());
+      this.onSaved.emit();
     }
   }
 }
