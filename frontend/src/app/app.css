@@ -5,32 +5,39 @@ ul {
 }
 
 main {
-  padding: 20px;
+  padding: 32px;
+  min-height: 100vh;
 }
 
 .toolbar {
   display: flex;
-  gap: 10px;
-}
-
-button {
-  padding: 8px 16px;
-  cursor: pointer;
-}
-
-button:disabled {
-  cursor: not-allowed;
-  pointer-events: none;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+  padding: 14px 20px;
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
 }
 
 .tree-container {
   display: flex;
-  gap: 10px;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.app-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: -0.02em;
+  margin-right: auto;
 }
 
 .tree-search-and-display {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  min-width: 280px;
 }
-

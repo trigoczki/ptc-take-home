@@ -126,7 +126,7 @@ public class TreeNodeService {
         deleteRecursively(existing.getId());
 
         TreeNode parent = existing.getParent();
-        if (!treeNodeRepository.existsByParentId(parent.getId())) {
+        if (parent != null && !treeNodeRepository.existsByParentId(parent.getId())) {
             parent.setHasChildren(false);
         }
     }

@@ -6,20 +6,23 @@
 }
 
 .root-drop-zone {
-  border: 2px dashed #aaa;
-  border-radius: 6px;
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
   padding: 12px 16px;
   text-align: center;
-  color: #888;
-  background: #f9f9f9;
-  transition: background 0.2s, border-color 0.2s;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--color-surface-alt);
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
   cursor: default;
+  letter-spacing: 0.01em;
 }
 
 .root-drop-zone.root-drop-active {
-  background: #e0f7e9;
-  border-color: #4caf50;
-  color: #2e7d32;
+  background: var(--color-success-light);
+  border-color: var(--color-success-border);
+  color: var(--color-success);
 }
 
 .reorg-tree {
@@ -31,39 +34,49 @@
 .reorg-children {
   list-style-type: none;
   padding-left: 20px;
-  margin: 4px 0 0 0;
+  margin: 4px 0 0 12px;
+  border-left: 2px solid var(--color-primary-border);
 }
 
 .reorg-node {
-  padding: 6px 10px;
-  border-radius: 4px;
-  border: 1px solid transparent;
-  margin-bottom: 4px;
-  background: #fff;
-  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+  padding: 7px 12px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  margin-bottom: 5px;
+  background: var(--color-surface);
+  transition: background var(--transition), border-color var(--transition), opacity var(--transition), box-shadow var(--transition);
   cursor: grab;
+  box-shadow: var(--shadow-sm);
 }
 
 .reorg-node:hover {
-  background: #f0f4ff;
+  background: var(--color-primary-light);
+  border-color: var(--color-primary-border);
+  box-shadow: var(--shadow-sm);
 }
 
 .reorg-node.drag-over {
-  background: #dceeff;
-  border-color: #2196f3;
+  background: #dbeafe;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
 }
 
 .reorg-node.dragging {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: grabbing;
 }
 
 .reorg-node-name {
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-text);
   user-select: none;
+  letter-spacing: -0.01em;
 }
 
 .reorg-empty {
-  color: #aaa;
+  color: var(--color-text-muted);
   font-style: italic;
+  font-size: 13px;
+  padding: 8px 2px;
 }

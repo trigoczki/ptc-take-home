@@ -1,17 +1,23 @@
-<section>
+<section class="node-details">
   @if (isEditMode) {
     <div [formGroup]="nodeForm">
       <p>Edit node</p>
       <input type="text" placeholder="Name" formControlName="name">
       <input type="text" placeholder="Content" formControlName="content">
-      <button [disabled]="nodeForm.invalid" (click)="onEdit()">Edit</button>
+      <div class="node-actions">
+        <button [disabled]="nodeForm.invalid" (click)="onEdit()">Save</button>
+        <button class="btn-secondary" (click)="cancelEdit()">Cancel</button>
+      </div>
     </div>
   } @else if (selectedNode() != null) {
-    <p>Name: {{ selectedNode()!.name }}</p>
-    <p>Content: {{ selectedNode()!.content }}</p>
-    <button (click)="toggleDeleteMode()">Delete</button>
-    <button (click)="toggleEditMode()">Edit</button>
-    <button (click)="cancelEdit()">Cancel</button>
+    <p><strong>ID:</strong> {{ selectedNode()!.id }}</p>
+    <p><strong>Name:</strong> {{ selectedNode()!.name }}</p>
+    <p><strong>Content:</strong> {{ selectedNode()!.content }}</p>
+    <div class="node-actions">
+      <button (click)="toggleEditMode()">Edit</button>
+      <button class="btn-danger" (click)="toggleDeleteMode()">Delete</button>
+      <button class="btn-secondary" (click)="cancelEdit()">Close</button>
+    </div>
   }
 </section>
 @if (showDeleteDialog()) {
