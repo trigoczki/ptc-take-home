@@ -4,10 +4,11 @@ import {AddNode} from './add-node/add-node';
 import {TreeDisplay} from './tree-display/tree-display';
 import {EditNode} from './edit-node/edit-node';
 import {SearchById} from './search-by-id/search-by-id';
+import {SearchByContent} from './search-by-content/search-by-content';
 
 @Component({
   selector: 'app-root',
-  imports: [AddNode, EditNode, SearchById, TreeDisplay],
+  imports: [AddNode, EditNode, SearchById, SearchByContent, TreeDisplay],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

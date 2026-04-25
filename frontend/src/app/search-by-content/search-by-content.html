@@ -1,0 +1,13 @@
+<div class="search-container">
+  <label for="search-content-input">Search by Content:</label>
+  <input
+    id="search-content-input"
+    type="text"
+    [formControl]="searchControl"
+    placeholder="Search by content..."
+    class="search-input"
+  />
+  @if (searchControl.value) {
+    <button (click)="searchControl.setValue('')" class="clear-btn">✕</button>
+  }
+</div>

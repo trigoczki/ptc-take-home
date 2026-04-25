@@ -12,10 +12,7 @@ export class TreeDisplay {
   private treeNodeService = inject(TreeNodeService);
 
   readonly nodes = this.treeNodeService.nodes;
-
-  toggleNode(id: number): void {
-    this.treeNodeService.toggleNode(id);
-  }
+  readonly isSearching = this.treeNodeService.isSearching;
 
   selectNode(id: number): void {
     this.treeNodeService.selectNode(id);

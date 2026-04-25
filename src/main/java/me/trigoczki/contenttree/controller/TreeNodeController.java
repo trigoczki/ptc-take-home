@@ -26,8 +26,8 @@ public class TreeNodeController {
     }
 
     @GetMapping
-    public List<TreeNodeResponse> listNodes(@RequestParam(name = "parentId", required = false) Long parentId) {
-        return treeNodeService.listNodes(parentId);
+    public List<TreeNodeResponse> listNodes() {
+        return treeNodeService.listTree();
     }
 
     @PutMapping

@@ -9,6 +9,7 @@ public class TreeNodeResponse {
     private String content;
     private boolean hasChildren;
     private Long parentId;
+    private boolean match;
     private List<TreeNodeResponse> children;
 
     public TreeNodeResponse() {
@@ -62,6 +63,14 @@ public class TreeNodeResponse {
         this.parentId = parentId;
     }
 
+    public boolean isMatch() {
+        return match;
+    }
+
+    public void setMatch(boolean match) {
+        this.match = match;
+    }
+
     public List<TreeNodeResponse> getChildren() {
         return children;
     }
@@ -74,12 +83,12 @@ public class TreeNodeResponse {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         TreeNodeResponse that = (TreeNodeResponse) o;
-        return hasChildren == that.hasChildren && Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(content, that.content) && Objects.equals(parentId, that.parentId) && Objects.equals(children, that.children);
+        return hasChildren == that.hasChildren && match == that.match && Objects.equals(id, that.id) && Objects.equals(name, that.name) && Objects.equals(content, that.content) && Objects.equals(parentId, that.parentId) && Objects.equals(children, that.children);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, content, hasChildren, parentId, children);
+        return Objects.hash(id, name, content, hasChildren, parentId, match, children);
     }
 
     @Override
@@ -90,6 +99,7 @@ public class TreeNodeResponse {
                 ", content='" + content + '\'' +
                 ", hasChildren=" + hasChildren +
                 ", parentId=" + parentId +
+                ", match=" + match +
                 ", children=" + children +
                 '}';
     }

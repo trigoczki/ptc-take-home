@@ -11,6 +11,7 @@
     <p>Content: {{ selectedNode()!.content }}</p>
     <button (click)="toggleDeleteMode()">Delete</button>
     <button (click)="toggleEditMode()">Edit</button>
+    <button (click)="cancelEdit()">Cancel</button>
   }
 </section>
 @if (showDeleteDialog()) {

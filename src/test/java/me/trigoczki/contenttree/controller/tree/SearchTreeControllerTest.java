@@ -1,9 +1,8 @@
 package me.trigoczki.contenttree.controller.tree;
 
 import me.trigoczki.contenttree.controller.TreeController;
-import me.trigoczki.contenttree.domain.dto.FilteredTreeNodeResponse;
-import me.trigoczki.contenttree.domain.dto.TreeSearchResponse;
-import me.trigoczki.contenttree.service.TreeService;
+import me.trigoczki.contenttree.domain.dto.TreeNodeResponse;
+import me.trigoczki.contenttree.service.TreeNodeService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -12,7 +11,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
-import static org.mockito.Mockito.*;
+import static me.trigoczki.contenttree.Constants.TREE_SEARCH_URI;
+import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -20,42 +21,90 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @WebMvcTest(TreeController.class)
 public class SearchTreeControllerTest {
 
-    private static final String SEARCH_TREE_URI = "/api/tree/search";
-
     @Autowired
     private MockMvc mockMvc;
 
     @MockitoBean
-    private TreeService treeService;
+    private TreeNodeService treeNodeService;
 
     @Test
-    void searchWithValidSearchTermReturnsOk() throws Exception {
-        FilteredTreeNodeResponse matchedNode = new FilteredTreeNodeResponse();
-        matchedNode.setId(1L);
-        matchedNode.setName("Node 1");
-        matchedNode.setContent("Content containing term");
-        matchedNode.setMatch(true);
+    void searchWithMatchingQueryReturnsMatchingNodes() throws Exception {
+        TreeNodeResponse matchingNode = new TreeNodeResponse(1L, "Java Basics", "Introduction to Java", false, List.of());
+        matchingNode.setMatch(true);
 
-        TreeSearchResponse response = new TreeSearchResponse(List.of(matchedNode));
+        when(treeNodeService.searchTree("java"))
+                .thenReturn(List.of(matchingNode));
 
-        when(treeService.searchTree("term")).thenReturn(response);
-
-        mockMvc.perform(get(SEARCH_TREE_URI)
-                        .param("searchTerm", "term"))
+        mockMvc.perform(get(TREE_SEARCH_URI).param("searchTerm", "java"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.nodes[0].id").value(1L))
-                .andExpect(jsonPath("$.nodes[0].name").value("Node 1"))
-                .andExpect(jsonPath("$.nodes[0].content").value("Content containing term"))
-                .andExpect(jsonPath("$.nodes[0].match").value(true));
-
-        verify(treeService).searchTree("term");
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[0].name").value("Java Basics"))
+                .andExpect(jsonPath("$[0].content").value("Introduction to Java"))
+                .andExpect(jsonPath("$[0].match").value(true));
     }
 
     @Test
-    void searchWithoutSearchTermReturnsBadRequest() throws Exception {
-        mockMvc.perform(get(SEARCH_TREE_URI))
-                .andExpect(status().isBadRequest());
+    void searchWithBlankQueryReturnsFullTree() throws Exception {
+        TreeNodeResponse root1 = new TreeNodeResponse(1L, "Root One", "Content One", false, List.of());
+        TreeNodeResponse root2 = new TreeNodeResponse(2L, "Root Two", "Content Two", true, List.of());
 
-        verifyNoInteractions(treeService);
+        when(treeNodeService.searchTree(""))
+                .thenReturn(List.of(root1, root2));
+
+        mockMvc.perform(get(TREE_SEARCH_URI).param("searchTerm", ""))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[1].id").value(2L));
+    }
+
+    @Test
+    void searchWithNoMatchReturnsNodesWithMatchFalse() throws Exception {
+        TreeNodeResponse nonMatchingNode = new TreeNodeResponse(1L, "Spring Framework", "Spring Boot guide", false, List.of());
+        nonMatchingNode.setMatch(false);
+
+        when(treeNodeService.searchTree("python"))
+                .thenReturn(List.of(nonMatchingNode));
+
+        mockMvc.perform(get(TREE_SEARCH_URI).param("searchTerm", "python"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[0].match").value(false));
+    }
+
+    @Test
+    void searchReturnsEmptyListWhenNoNodesExist() throws Exception {
+        when(treeNodeService.searchTree("anything"))
+                .thenReturn(List.of());
+
+        mockMvc.perform(get(TREE_SEARCH_URI).param("searchTerm", "anything"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(0)));
+    }
+
+    @Test
+    void searchWithChildNodesReturnsNestedStructure() throws Exception {
+        TreeNodeResponse child = new TreeNodeResponse(2L, "Java Advanced", "Advanced Java topics", false, List.of());
+        child.setParentId(1L);
+        child.setMatch(true);
+
+        TreeNodeResponse parent = new TreeNodeResponse(1L, "Programming", "Programming resources", true, List.of(child));
+        parent.setMatch(false);
+
+        when(treeNodeService.searchTree("advanced"))
+                .thenReturn(List.of(parent));
+
+        mockMvc.perform(get(TREE_SEARCH_URI).param("searchTerm", "advanced"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(1L))
+                .andExpect(jsonPath("$[0].match").value(false))
+                .andExpect(jsonPath("$[0].hasChildren").value(true))
+                .andExpect(jsonPath("$[0].children", hasSize(1)))
+                .andExpect(jsonPath("$[0].children[0].id").value(2L))
+                .andExpect(jsonPath("$[0].children[0].match").value(true))
+                .andExpect(jsonPath("$[0].children[0].parentId").value(1L));
     }
 }

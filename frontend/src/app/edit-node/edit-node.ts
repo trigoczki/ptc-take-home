@@ -44,6 +44,10 @@ export class EditNode {
     this.isEditMode = !this.isEditMode;
   }
 
+  cancelEdit(): void {
+    this.api.selectNode(null)
+  }
+
   onEdit(): void {
     if (this.nodeForm.valid) {
       this.api.updateNode(this.nodeForm.getRawValue());

@@ -3,7 +3,6 @@ export interface TreeNode {
   children: TreeNode[];
   content: string;
   hasChildren: boolean;
-  isOpen: boolean;
   match: boolean;
   name: string;
   parentId: number | null;

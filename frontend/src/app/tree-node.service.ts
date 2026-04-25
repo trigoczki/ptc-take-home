@@ -6,15 +6,17 @@ import {AddNodeRequest, TreeNode, TreeNodeResponse, UpdateNodeRequest} from './t
   providedIn: 'root'
 })
 export class TreeNodeService {
-  private readonly basePath = 'http://localhost:8080/api/tree/nodes';
+  private readonly baseUrl = 'http://localhost:8080';
+  private readonly basePath = `${this.baseUrl}/api/tree/nodes`;
+  private readonly searchPath = `${this.baseUrl}/api/tree/search`;
   private http = inject(HttpClient);
 
   readonly nodes = signal<TreeNode[]>([]);
   selectedNodeId = signal<number | null>(null);
   selectedNode = signal<TreeNode | null>(null);
-  openNodes = signal<Set<number>>(new Set<number>());
   searchId = signal<number | null>(null);
   showDeleteDialog = signal(false);
+  isSearching = signal(false);
 
   constructor() {
     effect(() => {
@@ -27,9 +29,34 @@ export class TreeNodeService {
     });
   }
 
+  searchByContent(query: string): void {
+    this.nodes.set([]);
+    this.isSearching.set(true);
+    this.http.get<TreeNodeResponse[]>(`${this.searchPath}?searchTerm=${encodeURIComponent(query)}`)
+      .subscribe({
+        next: (response) => {
+          console.log(response);
+          this.nodes.set(response.map(n => this.toTreeNode(n)));
+        },
+        error: (err) => console.error('Failed to search by content', err)
+      });
+  }
+
+  loadNodes(): void {
+    this.isSearching.set(false);
+    this.http.get<TreeNodeResponse[]>(this.basePath).subscribe({
+      next: (response) => {
+        response.forEach(n =>
+          this.nodes.set(response.map(n => this.toTreeNode(n)))
+        );
+
+      },
+      error: (err) => console.error('Failed to load nodes', err)
+    });
+  }
+
   fetchNodeById(id: number): void {
-    this.nodes.set([])
-    this.openNodes.set(new Set<number>());
+    this.nodes.set([]);
     this.http.get<TreeNodeResponse>(`${this.basePath}/${id}`)
       .subscribe({
         next: (response) => this.nodes.set([this.toTreeNode(response)]),
@@ -64,7 +91,6 @@ export class TreeNodeService {
       let parent = this.getNodeById(parentId);
       if (parent?.children?.length === 0) {
         this.nodes.update(nodes => this.setHasChildrenInTree(nodes, parentId, false));
-        this.closeNode(parentId)
       }
     }
   }
@@ -75,27 +101,13 @@ export class TreeNodeService {
       .map(node => ({...node, children: this.filterNodeFromTree(node.children, id)}));
   }
 
-  loadNodes(parentId?: number | null): void {
-    const url = parentId != null
-      ? `${this.basePath}?parentId=${parentId}`
-      : this.basePath;
-    this.http.get<TreeNodeResponse[]>(url).subscribe({
-      next: (response) => {
-        if (parentId == null) {
-          this.nodes.set(response.map(n => this.toTreeNode(n)));
-        } else {
-          response.forEach(n =>
-            this.nodes.update(nodes => this.insertInTree(nodes, parentId, this.toTreeNode(n)))
-          );
-        }
-      },
-      error: (err) => console.error('Failed to load nodes', err)
-    });
-  }
-
-  selectNode(id: number): void {
+  selectNode(id: number | null): void {
     this.selectedNodeId.set(id);
-    this.selectedNode.set(this.getNodeById(id));
+    if (id == null) {
+      this.selectedNode.set(null);
+    } else {
+      this.selectedNode.set(this.getNodeById(id));
+    }
   }
 
   getNodeById(id: number): TreeNode | null {
@@ -118,47 +130,6 @@ export class TreeNodeService {
     return null;
   }
 
-  openNode(id: number): void {
-    this.openNodes.update(nodes => {
-      nodes.add(id);
-      return nodes;
-    });
-  }
-
-  closeNode(id: number): void {
-    this.openNodes.update(nodes => {
-      const newSet = new Set(nodes);
-      newSet.delete(id);
-      return newSet;
-    });
-    this.nodes.update(nodes => this.setIsOpenInTree(nodes, id, false));
-  }
-
-  deleteChildren(parentId: number): void {
-    this.nodes.update(nodes => this.removeChildrenInTree(nodes, parentId));
-  }
-
-  private removeChildrenInTree(nodes: TreeNode[], parentId: number): TreeNode[] {
-    return nodes.map(node => {
-      if (node.id === parentId) {
-        return {...node, children: []};
-      }
-      if (node.children && node.children.length > 0) {
-        return {...node, children: this.removeChildrenInTree(node.children, parentId)};
-      }
-      return node;
-    });
-  }
-
-  toggleNode(id: number): void {
-    if (this.openNodes().has(id)) {
-      this.closeNode(id);
-      this.deleteChildren(id);
-    } else {
-      this.openNode(id);
-      this.loadNodes(id);
-    }
-  }
 
   private setHasChildrenInTree(nodes: TreeNode[], id: number, hasChildren: boolean): TreeNode[] {
     return nodes.map(node => {
@@ -172,26 +143,12 @@ export class TreeNodeService {
     });
   }
 
-  private setIsOpenInTree(nodes: TreeNode[], id: number, isOpen: boolean): TreeNode[] {
-    return nodes.map(node => {
-      if (node.id === id) {
-        return {...node, isOpen};
-      }
-      if (node.children && node.children.length > 0) {
-        return {...node, children: this.setIsOpenInTree(node.children, id, isOpen)};
-      }
-      return node;
-    });
-  }
-
   insertNode(newNode: TreeNodeResponse): void {
     const treeNode = this.toTreeNode(newNode);
     if (newNode.parentId == null) {
       this.nodes.update(nodes => [...nodes, treeNode]);
     } else {
       this.nodes.update(nodes => this.insertInTree(nodes, newNode.parentId!, treeNode));
-      this.openNode(newNode.parentId);
-      this.nodes.update(nodes => this.setIsOpenInTree(nodes, newNode.parentId!, true));
       this.nodes.update(nodes => this.setHasChildrenInTree(nodes, newNode.parentId!, true));
     }
   }
@@ -199,7 +156,7 @@ export class TreeNodeService {
   private insertInTree(nodes: TreeNode[], parentId: number, newNode: TreeNode): TreeNode[] {
     return nodes.map(node => {
       if (node.id === parentId) {
-        return {...node, isOpen: true, children: [...(node.children ?? []), newNode]};
+        return {...node, children: [...(node.children ?? []), newNode]};
       }
       if (node.children && node.children.length > 0) {
         return {...node, children: this.insertInTree(node.children, parentId, newNode)};
@@ -216,7 +173,6 @@ export class TreeNodeService {
       match: r.match,
       hasChildren: r.hasChildren,
       parentId: r.parentId,
-      isOpen: this.openNodes().has(r.id),
       children: (r.children ?? []).map(c => this.toTreeNode(c))
     };
   }
