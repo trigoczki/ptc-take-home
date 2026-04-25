@@ -71,7 +71,11 @@ export class TreeNodeService {
 
   updateNode(node: UpdateNodeRequest): void {
     this.http.put<TreeNodeResponse>(`${this.basePath}`, node)
-      .subscribe({next: (response) => this.updateNodeInTree(response)});
+      .subscribe({
+        next: () => {
+          this.loadNodes();
+        }
+      });
   }
 
   deleteNode(id: number): void {

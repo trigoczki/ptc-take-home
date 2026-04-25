@@ -1,0 +1,37 @@
+<ng-template #treeNodes let-nodeList="nodeList">
+  @for (node of nodeList; track node.id) {
+    <li class="reorg-node"
+        [class.drag-over]="dropTargetId() === node.id"
+        [class.dragging]="draggedNode()?.id === node.id"
+        draggable="true"
+        (dragstart)="onDragStart(node)"
+        (dragover)="onDragOver($event, node.id)"
+        (dragleave)="onDragLeave(node.id)"
+        (drop)="onDrop($event, node.id)">
+      <span class="reorg-node-name">{{ node.name }}</span>
+      @if (node.children && node.children.length > 0) {
+        <ul class="reorg-children">
+          <ng-container *ngTemplateOutlet="treeNodes; context: { nodeList: node.children }"></ng-container>
+        </ul>
+      }
+    </li>
+  }
+</ng-template>
+
+<div class="reorg-container">
+  <div class="root-drop-zone"
+       [class.root-drop-active]="rootDropActive()"
+       (dragover)="onRootDragOver($event)"
+       (dragleave)="onRootDragLeave()"
+       (drop)="onRootDrop($event)">
+    Drop here to make root-level node
+  </div>
+
+  <ul class="reorg-tree">
+    @if (nodes().length > 0) {
+      <ng-container *ngTemplateOutlet="treeNodes; context: { nodeList: nodes() }"></ng-container>
+    } @else {
+      <li class="reorg-empty">No nodes yet.</li>
+    }
+  </ul>
+</div>

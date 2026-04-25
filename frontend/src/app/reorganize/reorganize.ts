@@ -1,37 +1,27 @@
 import {Component, inject, signal} from '@angular/core';
-import {NgTemplateOutlet} from '@angular/common';
 import {TreeNodeService} from '../tree-node.service';
 import {TreeNode} from '../tree-node.model';
+import {NgTemplateOutlet} from '@angular/common';
 
 @Component({
-  selector: 'app-tree-display',
+  selector: 'reorganize',
   imports: [NgTemplateOutlet],
-  templateUrl: './tree-display.html',
-  styleUrl: './tree-display.css',
+  templateUrl: './reorganize.html',
+  styleUrl: './reorganize.css',
 })
-export class TreeDisplay {
+export class Reorganize {
   private treeNodeService = inject(TreeNodeService);
 
   readonly nodes = this.treeNodeService.nodes;
-  readonly isSearching = this.treeNodeService.isSearching;
-
   draggedNode = signal<TreeNode | null>(null);
   dropTargetId = signal<number | null>(null);
   rootDropActive = signal(false);
 
-  selectNode(id: number): void {
-    this.treeNodeService.selectNode(id);
-  }
-
   onDragStart(node: TreeNode): void {
-    if (!this.draggedNode()) {
-      console.log(node);
-      this.draggedNode.set(node);
-    }
+    this.draggedNode.set(node);
   }
 
   onDragOver(event: DragEvent, targetId: number): void {
-    event.stopPropagation();
     const dragged = this.draggedNode();
     if (dragged && dragged.id !== targetId && !this.isDescendant(dragged, targetId)) {
       event.preventDefault();
@@ -47,8 +37,6 @@ export class TreeDisplay {
 
   onDrop(event: DragEvent, targetId: number): void {
     event.preventDefault();
-    event.stopPropagation();
-    console.log("Drop");
     const dragged = this.draggedNode();
     if (!dragged || dragged.id === targetId || this.isDescendant(dragged, targetId)) {
       this.resetDrag();
@@ -60,6 +48,7 @@ export class TreeDisplay {
       content: dragged.content,
       parentId: targetId
     });
+    this.treeNodeService.loadNodes();
     this.resetDrag();
   }
 
@@ -77,8 +66,6 @@ export class TreeDisplay {
 
   onRootDrop(event: DragEvent): void {
     event.preventDefault();
-    event.stopPropagation();
-    console.log("Root drop");
     const dragged = this.draggedNode();
     if (!dragged) {
       this.resetDrag();
@@ -90,6 +77,7 @@ export class TreeDisplay {
       content: dragged.content,
       parentId: null
     });
+    this.treeNodeService.loadNodes();
     this.resetDrag();
   }
 

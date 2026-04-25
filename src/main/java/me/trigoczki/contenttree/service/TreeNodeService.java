@@ -61,14 +61,18 @@ public class TreeNodeService {
 
         node.setName(request.getName());
         node.setContent(request.getContent());
+        if (request.getParentId() == null) {
+            node.setParent(null);
+        }
 
         TreeNode originalParent = node.getParent();
-        if (originalParent != null && !originalParent.getId().equals(request.getParentId())) {
+        if ((originalParent != null && !originalParent.getId().equals(request.getParentId())) ||
+                (originalParent == null && request.getParentId() != null)) {
             TreeNode newParent = treeNodeRepository.findById(request.getParentId())
                     .orElseThrow(() -> new NotFoundException("Parent node not found: " + request.getParentId()));
             newParent.setHasChildren(true);
             node.setParent(newParent);
-            if (!treeNodeRepository.existsByParentId(originalParent.getId())) {
+            if (originalParent != null && !treeNodeRepository.existsByParentId(originalParent.getId())) {
                 originalParent.setHasChildren(false);
             }
         }
@@ -104,7 +108,13 @@ public class TreeNodeService {
                 .map(child -> buildTree(child, childrenByParent))
                 .toList();
 
-        return new TreeNodeResponse(node.getId(), node.getName(), node.getContent(), !CollectionUtils.isEmpty(children), children);
+        TreeNodeResponse treeNodeResponse = new TreeNodeResponse(node.getId(), node.getName(), node.getContent(), !CollectionUtils.isEmpty(children), children);
+        TreeNode parent = node.getParent();
+        if (parent != null) {
+            treeNodeResponse.setParentId(parent.getId());
+        }
+
+        return treeNodeResponse;
     }
 
 

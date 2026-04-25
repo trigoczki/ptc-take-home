@@ -2,7 +2,14 @@
   @for (node of nodeList; track node.id) {
     <li class="tree-node"
         [class.node-matched]="isSearching() && node.match"
-        [class.node-unmatched]="isSearching() && !node.match">
+        [class.node-unmatched]="isSearching() && !node.match"
+        [class.drag-over]="dropTargetId() === node.id"
+        [class.dragging]="draggedNode()?.id === node.id"
+        draggable="true"
+        (dragstart)="onDragStart(node)"
+        (dragover)="onDragOver($event, node.id)"
+        (dragleave)="onDragLeave(node.id)"
+        (drop)="onDrop($event, node.id)">
       <div class="node-header">
         <span class="node-name" (click)="selectNode(node.id)">{{ node.name }}</span>
       </div>
@@ -14,6 +21,14 @@
     </li>
   }
 </ng-template>
+
+<div class="root-drop-zone"
+     [class.root-drop-active]="rootDropActive()"
+     (dragover)="onRootDragOver($event)"
+     (dragleave)="onRootDragLeave()"
+     (drop)="onRootDrop($event)">
+  Drop here to make root-level node
+</div>
 
 <ul class="tree-root">
   @if (nodes().length > 0) {

@@ -1,0 +1,69 @@
+.reorg-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 260px;
+}
+
+.root-drop-zone {
+  border: 2px dashed #aaa;
+  border-radius: 6px;
+  padding: 12px 16px;
+  text-align: center;
+  color: #888;
+  background: #f9f9f9;
+  transition: background 0.2s, border-color 0.2s;
+  cursor: default;
+}
+
+.root-drop-zone.root-drop-active {
+  background: #e0f7e9;
+  border-color: #4caf50;
+  color: #2e7d32;
+}
+
+.reorg-tree {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.reorg-children {
+  list-style-type: none;
+  padding-left: 20px;
+  margin: 4px 0 0 0;
+}
+
+.reorg-node {
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  margin-bottom: 4px;
+  background: #fff;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+  cursor: grab;
+}
+
+.reorg-node:hover {
+  background: #f0f4ff;
+}
+
+.reorg-node.drag-over {
+  background: #dceeff;
+  border-color: #2196f3;
+}
+
+.reorg-node.dragging {
+  opacity: 0.45;
+  cursor: grabbing;
+}
+
+.reorg-node-name {
+  font-weight: 500;
+  user-select: none;
+}
+
+.reorg-empty {
+  color: #aaa;
+  font-style: italic;
+}
