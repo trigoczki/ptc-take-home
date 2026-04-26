@@ -180,24 +180,4 @@ export class TreeNodeService {
       children: (r.children ?? []).map(c => this.toTreeNode(c))
     };
   }
-
-  private updateNodeInTree(response: TreeNodeResponse) {
-    const treeNode = this.toTreeNode(response);
-    this.nodes.update(nodes => this.replaceNodeInTree(nodes, treeNode));
-    if (this.selectedNode()?.id === treeNode.id) {
-      this.selectedNode.set(treeNode);
-    }
-  }
-
-  private replaceNodeInTree(nodes: TreeNode[], updatedNode: TreeNode): TreeNode[] {
-    return nodes.map(node => {
-      if (node.id === updatedNode.id) {
-        return {...updatedNode, children: node.children};
-      }
-      if (node.children && node.children.length > 0) {
-        return {...node, children: this.replaceNodeInTree(node.children, updatedNode)};
-      }
-      return node;
-    });
-  }
 }
